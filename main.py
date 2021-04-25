@@ -13,21 +13,23 @@ class Main:
         self.foundFood = False
         self.ant_stop = False
         self.save_coords = False
+        self.fps = 30
+        self.nest = Object(self.width/2-5, self.height/2-5, 10, 10, (55, 55, 55))
   
     def run(self):
         pygame.display.set_caption("Ant Simulator")
         # saving cords every ... secs
-        pygame.time.set_timer(pygame.USEREVENT, 600)
+        pygame.time.set_timer(pygame.USEREVENT, 4000)
         # initialize food
-        food = Object(100, 500, 50, 50, (0, 255, 0))
-        # init nest
-        nest = Object(self.width/2, self.height/2, 10, 10, (0, 0, 0))
+        food = Object(250, 500, 50, 50, (0, 255, 0))
+
         ants = []
+        back_ants = []
         
         run = True
         while run:
-            self.screen.fill((200, 200, 200))
-            self.clock.tick(70)
+            self.screen.fill((0, 0, 0))
+            self.clock.tick(self.fps)
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     run = False
@@ -41,7 +43,7 @@ class Main:
             # create ants one time
             while not self.ant_stop:
                 for i in range(500):
-                    ants.append(Ant(self.width/2, self.height/2, 1, random.randrange(25, 30)))
+                    ants.append(Ant(self.width/2, self.height/2, 1, random.randrange(3, 12)))
                 self.ant_stop = True
 
             # draw things
@@ -49,19 +51,23 @@ class Main:
                 ants[i].update(self.screen, self.width, self.height)
 
             food.update(self.screen)
-            nest.update(self.screen)
+            self.nest.update(self.screen)
 
             # food collison
             for ant in ants:
                 if ant.x >= food.x and ant.x <= food.x + food.width:
                     if ant.y >= food.y and ant.y <= food.y + food.height:
-                        if not self.save_coords:
-                            ant.saveCoordinates()
-                            self.save_coords = True
-                        ant.drawPath(self.screen)
-                        ant.moveBack(self.screen)
+                        # save cords for one last time
+                        ant.saveCoordinates()  
+                        ant.radius = 3
+                        back_ants.append(ant)
                         self.foundFood = True
 
+            # move ant back to nest
+            if self.foundFood:
+                for ant in back_ants:
+                    ant.moveBack()
+                    #ant.drawPath(self.screen)
             
             pygame.display.flip()
 
@@ -71,7 +77,7 @@ class Ant:
         self.x = x
         self.y = y
         self.radius = radius
-        self.vel = 3
+        self.vel = 2
         self.rand = numpy.linspace(-self.vel, +self.vel, 100)
         self.walk_time = walk_time
         self.walk_count = self.walk_time
@@ -79,24 +85,22 @@ class Ant:
         self.coordinates = [[350, 350]]
         self.coord_count = 0  # used for going back to nest
         self.back = False
+        self.line_count = 1 # used for going back to nest
         
     
     def update(self, screen, width, height):
-        # stop moving if food has been found
-        if not main.foundFood:
-            # gets a ranodom value from rand every walk_time ticks and sets x and y
+        if not self.back:
             if self.walk_count == self.walk_time:
                 self.walk_list[0] = random.choice(self.rand)
                 self.walk_list[1] = random.choice(self.rand)
                 self.walk_count = 0
-            
+        
             self.x += self.walk_list[0]
             self.y += self.walk_list[1]
-
             self.walk_count += 1
-
+     
         # draw updated ant
-        pygame.draw.circle(screen, (120, 30, 60), (self.x, self.y), self.radius)
+        pygame.draw.circle(screen, (255, 255, 255), (self.x, self.y), self.radius)
 
         # wall collision
         if self.x > width:
@@ -115,17 +119,32 @@ class Ant:
         for i in range(len(self.coordinates)-1):
             pygame.draw.line(screen, (120, 30, 60), (self.coordinates[i][0], self.coordinates[i][1]), (self.coordinates[i+1][0], self.coordinates[i+1][1]))
 
-        #pygame.draw.line(screen, (120, 30, 60), (350, 350), (self.coordinates[0][0], self.coordinates[0][1]))
-        #pygame.draw.line(screen, (120, 30, 60), (self.coordinates[0][0], self.coordinates[0][1]), (self.coordinates[1][0], self.coordinates[1][1]))
-        #pygame.draw.line(screen, (120, 30, 60), (self.coordinates[1][0], self.coordinates[1][1]), (self.coordinates[2][0], self.coordinates[2][1]))
-        #pygame.draw.line(screen, (120, 30, 60), (self.coordinates[2][0], self.coordinates[2][1]), (self.coordinates[3][0], self.coordinates[3][1]))
         
-    def moveBack(self, screen):
-        print(self.coordinates[:-1])
-        return
-
     
-  
+    def moveBack(self):
+        self.back = True
+        len_coords = len(self.coordinates)
+        if self.line_count != len_coords:
+            a = self.coordinates[-self.line_count]
+            e = self.coordinates[-(self.line_count+1)]
+            dx, dy = (e[0] - a[0], e[1] - a[1])
+            stepx, stepy = (dx/main.fps, dy/main.fps)
+
+            self.x += stepx
+            self.y += stepy
+
+            # when reached end
+            
+            if round(self.x) == self.coordinates[-1-self.line_count][0] and round(self.y) == self.coordinates[-1-self.line_count][1]:
+                self.line_count += 1
+                print("true")
+
+
+
+            if self.x >= main.nest.x and self.x <= main.nest.x + main.nest.width:
+                    if self.y >= main.nest.y and self.y <= main.nest.y + main.nest.height:
+                        print("true")
+        
 
 
 
