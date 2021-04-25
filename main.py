@@ -19,9 +19,9 @@ class Main:
     def run(self):
         pygame.display.set_caption("Ant Simulator")
         # saving cords every ... secs
-        pygame.time.set_timer(pygame.USEREVENT, 4000)
+        pygame.time.set_timer(pygame.USEREVENT, 3000)
         # initialize food
-        food = Object(250, 500, 50, 50, (0, 255, 0))
+        food = Object(500, 350, 50, 50, (0, 255, 0))
 
         ants = []
         back_ants = []
@@ -55,13 +55,14 @@ class Main:
 
             # food collison
             for ant in ants:
-                if ant.x >= food.x and ant.x <= food.x + food.width:
-                    if ant.y >= food.y and ant.y <= food.y + food.height:
-                        # save cords for one last time
-                        ant.saveCoordinates()  
-                        ant.radius = 3
-                        back_ants.append(ant)
-                        self.foundFood = True
+                if not ant.back:
+                    if ant.x >= food.x and ant.x <= food.x + food.width:
+                        if ant.y >= food.y and ant.y <= food.y + food.height:
+                            # save cords for one last time
+                            ant.saveCoordinates()  
+                            ant.radius = 3
+                            back_ants.append(ant)
+                            self.foundFood = True
 
             # move ant back to nest
             if self.foundFood:
@@ -118,8 +119,6 @@ class Ant:
     def drawPath(self, screen):
         for i in range(len(self.coordinates)-1):
             pygame.draw.line(screen, (120, 30, 60), (self.coordinates[i][0], self.coordinates[i][1]), (self.coordinates[i+1][0], self.coordinates[i+1][1]))
-
-        
     
     def moveBack(self):
         self.back = True
@@ -129,6 +128,7 @@ class Ant:
             e = self.coordinates[-(self.line_count+1)]
             dx, dy = (e[0] - a[0], e[1] - a[1])
             stepx, stepy = (dx/main.fps, dy/main.fps)
+            print(stepx, stepy)
 
             self.x += stepx
             self.y += stepy
