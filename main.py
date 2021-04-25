@@ -134,18 +134,13 @@ class Ant:
             self.y += stepy
 
             # when reached end
-            
             if round(self.x) == self.coordinates[-1-self.line_count][0] and round(self.y) == self.coordinates[-1-self.line_count][1]:
                 self.line_count += 1
                 print("true")
 
-
-
             if self.x >= main.nest.x and self.x <= main.nest.x + main.nest.width:
                     if self.y >= main.nest.y and self.y <= main.nest.y + main.nest.height:
                         print("true")
-        
-
 
 
 class Object:
