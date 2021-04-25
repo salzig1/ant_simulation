@@ -68,7 +68,7 @@ class Main:
             if self.foundFood:
                 for ant in back_ants:
                     ant.moveBack()
-                    #ant.drawPath(self.screen)
+                    ant.drawPath(self.screen)
             
             pygame.display.flip()
 
