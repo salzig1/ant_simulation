@@ -2,7 +2,7 @@ import pygame
 import random
 import math
 import numpy
-import ant as at
+import ant as ant_file
 
 class Main:
     pygame.init()
@@ -14,7 +14,7 @@ class Main:
         self.foundFood = False
         self.ant_stop = False
         self.save_coords = False
-        self.fps = 30
+        self.fps = 70
         self.nest = Object(self.width/2-5, self.height/2-5, 10, 10, (55, 55, 55))
   
     def run(self):
@@ -22,10 +22,13 @@ class Main:
         # saving cords every ... secs
         pygame.time.set_timer(pygame.USEREVENT, 3000)
         # initialize food
-        food = Object(500, 350, 50, 50, (0, 255, 0))
         nest = Object(self.width/2-5, self.height/2-5, 10, 10, (55, 55, 55))
-
+        foods = []
         ants = []
+
+
+        foods.append(Object(500, 200, 50, 50, (0, 255, 0)))
+        foods.append(Object(100, 350, 50, 100, (0, 255, 0)))
         back_ants = []
         
         run = True
@@ -44,32 +47,35 @@ class Main:
   
             # create ants one time
             while not self.ant_stop:
-                for i in range(500):
-                    ants.append(at.Ant(self.width/2, self.height/2, 1, random.randrange(3, 12)))
+                for i in range(1500):
+                    ants.append(ant_file.Ant(self.width/2, self.height/2, 1, random.randrange(3, 12)))
                 self.ant_stop = True
             
             
             # draw things
-            for i in range(len(ants)):
-                ants[i].update(self.screen, self.width, self.height)
+            for ant in ants:
+                ant.update(self.screen, self.width, self.height)
 
-            food.update(self.screen)
+            for food in foods:
+                food.update(self.screen)
             self.nest.update(self.screen)
 
             # food collison
             for ant in ants:
                 if not ant.back:
-                    if ant.x >= food.x and ant.x <= food.x + food.width:
-                        if ant.y >= food.y and ant.y <= food.y + food.height:
-                            # save cords for one last time
-                            ant.saveCoordinates()  
-                            back_ants.append(ant)
-                            self.foundFood = True
+                    for food in foods:
+                        if ant.x >= food.x and ant.x <= food.x + food.width:
+                            if ant.y >= food.y and ant.y <= food.y + food.height:
+                                # save cords for one last time
+                                ant.saveCoordinates()  
+                                back_ants.append(ant)
+                                self.foundFood = True
 
             # move ant back to nest
             if self.foundFood:
                 for ant in back_ants:
-                    ant.moveBack(nest)
+                    #}ant.color = (127, 30, 212)
+                    ant.moveBack(nest, self.fps)
                     #ant.drawPath(self.screen)
             
             pygame.display.flip()
@@ -84,7 +90,7 @@ class Object:
         self.color = color
 
     def update(self, screen):
-        pygame.draw.rect(screen, self.color, [self.x, self.y, self.width, self.height], border_radius=20)
+        pygame.draw.rect(screen, self.color, [self.x, self.y, self.width, self.height], border_radius=0)
         
 
 

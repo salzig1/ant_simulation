@@ -9,7 +9,8 @@ class Ant:
         self.x = x
         self.y = y
         self.radius = radius
-        self.vel = 2
+        self.vel = 3
+        self.color = (200, 200, 200)
         self.rand = numpy.linspace(-self.vel, +self.vel, 100)
         self.walk_time = walk_time
         self.walk_count = self.walk_time
@@ -32,7 +33,7 @@ class Ant:
             self.walk_count += 1
      
         # draw updated ant
-        pygame.draw.circle(screen, (255, 255, 255), (self.x, self.y), self.radius)
+        pygame.draw.circle(screen, self.color, (self.x, self.y), self.radius, draw_top_right=False)
 
         # wall collision
         if self.x > width:
@@ -51,7 +52,7 @@ class Ant:
         for i in range(len(self.coordinates)-1):
             pygame.draw.line(screen, (120, 30, 60), (self.coordinates[i][0], self.coordinates[i][1]), (self.coordinates[i+1][0], self.coordinates[i+1][1]))
     
-    def moveBack(self, nest):
+    def moveBack(self, nest, fps):
         import main
 
         self.back = True
@@ -60,7 +61,7 @@ class Ant:
             a = self.coordinates[-self.line_count]
             e = self.coordinates[-(self.line_count+1)]
             dx, dy = (e[0] - a[0], e[1] - a[1])
-            stepx, stepy = (dx/60, dy/60)
+            stepx, stepy = (dx/fps, dy/fps)
             
         
             self.x += stepx
