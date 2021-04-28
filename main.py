@@ -55,7 +55,7 @@ class Ant:
         self.x = x
         self.y = y
         self.radius = radius
-        self.VEL = 2
+        self.VEL = 3
         self.RAND = numpy.linspace(-self.VEL, +self.VEL, 100)
         self.new_line = False
        
