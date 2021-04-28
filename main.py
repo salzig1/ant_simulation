@@ -10,14 +10,14 @@ class Main:
         self.WIDTH = 700
         self.HEIGHT = 700
         self.FPS = 30
-        self.ANT_COUNT = 300
+        self.ANT_COUNT = 1 # change this for more ants
         self.ants = []
         self.ant_stop = False
         self.screen = pygame.display.set_mode((self.WIDTH, self.HEIGHT))
         self.clock = pygame.time.Clock()
         self.food = Object(500, 200, 50, 300, (0, 255, 0))
         self.nest = Object(self.WIDTH/2-5, self.HEIGHT/2-5, 10, 10, (55, 55, 55))
-        pygame.time.set_timer(pygame.USEREVENT+1, random.randrange(150, 300))
+        pygame.time.set_timer(pygame.USEREVENT+1, random.randrange(1000))
 
     def run(self):
         self.createAnts(self.ANT_COUNT)
@@ -55,7 +55,7 @@ class Ant:
         self.x = x
         self.y = y
         self.radius = radius
-        self.VEL = 5
+        self.VEL = 2
         self.RAND = numpy.linspace(-self.VEL, +self.VEL, 100)
         self.new_line = False
        
@@ -89,7 +89,7 @@ class Ant:
         if self.x >= main.food.x and self.x <= main.food.x + main.food.WIDTH:
             if self.y >= main.food.y and self.y <= main.food.y + main.food.HEIGHT:
                 self.foundFood = True
-                self.radius = 4
+                self.radius = 4  # for visualization
 
     def wallCollision(self, width, height):
         if self.x > width:
@@ -105,6 +105,7 @@ class Ant:
         if round(self.x) == nest.x and round(self.y) == nest.y:
             self.foundFood = False
             self.foundWay = False
+            self.radius = 1
     
     def backToNest(self, screen, nest):
         if not self.foundWay:
