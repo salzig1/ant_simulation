@@ -10,16 +10,17 @@ class Main:
         self.WIDTH = 700
         self.HEIGHT = 700
         self.FPS = 30
-        self.ANT_COUNT = 1 # change this for more ants
+        self.ANT_COUNT = 50 # change this for more ants
         self.ants = []
         self.ant_stop = False
         self.screen = pygame.display.set_mode((self.WIDTH, self.HEIGHT))
         self.clock = pygame.time.Clock()
-        self.food = Object(500, 200, 50, 300, (0, 255, 0))
+        self.food = Object(500, 200, 50, 50, (0, 255, 0))
         self.nest = Object(self.WIDTH/2-5, self.HEIGHT/2-5, 10, 10, (55, 55, 55))
-        pygame.time.set_timer(pygame.USEREVENT+1, random.randrange(1000))
+
 
     def run(self):
+        
         self.createAnts(self.ANT_COUNT)
         run = True
         while run:
@@ -31,16 +32,14 @@ class Main:
                 if event.type == pygame.KEYDOWN: 
                     if event.key == pygame.K_ESCAPE:
                         run = False
-                if event.type == pygame.USEREVENT+1:
-                    for ant in self.ants:
-                        ant.new_line = True
+              
  
             self.drawWindow()     
             pygame.display.flip()
     
     def createAnts(self, ant_count):
         for i in range(self.ANT_COUNT):
-            self.ants.append(Ant(self.WIDTH/2, self.HEIGHT/2, 1))
+            self.ants.append(Ant(self.WIDTH/2, self.HEIGHT/2, 1, 10))
     
     def drawWindow(self):
         for ant in self.ants:
@@ -51,61 +50,93 @@ class Main:
            
 
 class Ant:
-    def __init__(self, x, y, radius):
+    def __init__(self, x, y, radius, time):
         self.x = x
         self.y = y
         self.radius = radius
-        self.VEL = 3
-        self.RAND = numpy.linspace(-self.VEL, +self.VEL, 100)
-        self.new_line = False
-       
+        self.VEL = 2
+        self.new_line = True
         self.foundFood = False
         self.foundWay = False
-  
         self.deltax = 0
         self.deltay = 0
         self.sx = 0
         self.sy = 0
+        self.anglecount = 0
+        self.time = time
+        self.count = self.time  
         
     def update(self):
+        
         self.movement()
         self.foodCollision()
         self.nestCollision(main.nest)
         self.wallCollision(main.WIDTH, main.WIDTH)
 
         pygame.draw.circle(main.screen, (255, 255, 255), (self.x, self.y), self.radius)
+        
 
     def movement(self):
         if not self.foundFood:
-            if self.new_line:
-                self.deltax = random.choice(self.RAND)
-                self.deltay = random.choice(self.RAND)
+            if self.new_line or self.count == self.time:
+                angle = self.getNewAngle(self.deltax, self.deltay)
+                vector = pygame.math.Vector2(0, self.VEL).rotate(angle)
+                self.deltax = vector.x
+                self.deltay = vector.y
                 self.new_line = False
+                self.count = 0
             self.move(self.deltax, self.deltay)
         else:
             self.backToNest(main.screen, main.nest)
-
+        self.count += 1 
+    
+    def getNewAngle(self, x, y):
+        if x > 0 and y > 0:
+            return random.randint(-110, 20)
+        if x > 0 and y < 0:
+            return random.randint(160, 290)
+        if x < 0 and y > 0:
+            return random.randint(-20, 110)
+        if x < 0 and y < 0:
+            return random.randint(70, 200)
+        if x == 0 and y == 0:
+            return random.randint(0, 360)
+        else:
+            return random.randint(-65, 65)
+     
     def foodCollision(self):
         if self.x >= main.food.x and self.x <= main.food.x + main.food.WIDTH:
             if self.y >= main.food.y and self.y <= main.food.y + main.food.HEIGHT:
                 self.foundFood = True
-                self.radius = 4  # for visualization
 
     def wallCollision(self, width, height):
-        if self.x > width:
-            self.x = width
+        collision = False
         if self.x < 0:
-            self.x = 0
-        if self.y > height:
-            self.y = height
+            angle = random.randint(-135, -45)
+            collision = True
         if self.y < 0:
-            self.y = 0
+            angle = random.randint(-45, 45)
+            collision = True
+        if self.x > width:
+            angle = random.randint(45, 135)
+            collision = True
+        if self.y > height:
+            angle = random.randint(135, 225)
+            collision = True
+    
+        if collision:
+            self.new_line = False
+            vector = pygame.math.Vector2(0, self.VEL).rotate(angle)
+            self.deltax = vector.x
+            self.deltay = vector.y
 
     def nestCollision(self ,nest):
         if round(self.x) == nest.x and round(self.y) == nest.y:
             self.foundFood = False
             self.foundWay = False
-            self.radius = 1
+            self.new_line = True
+            self.deltax = 0
+            self.deltay = 0
     
     def backToNest(self, screen, nest):
         if not self.foundWay:
@@ -117,13 +148,6 @@ class Ant:
     def move(self, deltax, deltay):
         self.x += deltax
         self.y += deltay
-
-
-
-
-
-
-
 
 
 class Object:
